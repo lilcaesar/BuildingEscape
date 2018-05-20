@@ -23,7 +23,15 @@ void UGrabber::BeginPlay()
 	Super::BeginPlay();
 
 	UE_LOG(LogTemp, Warning, TEXT("Grabber UE_LOG"));
-	
+
+	//Look for attached physics handle
+	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
+	if (PhysicsHandle) {
+
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("%s missing physics handle component"), *GetOwner()->GetName());
+	}
 }
 
 
@@ -52,7 +60,23 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 		2.f
 	);
 
-	// Ray-cast out to reach disctance
+	//Query parameters
+	FCollisionQueryParams TraceParameters(FName(TEXT("")), false, GetOwner());
+
+	// Ray-cast (Line-trace), we use byObjectType since we need to trace objects with PhysicsBody on Collision->Collision Preset->Object Type only
+	FHitResult Hit;
+	GetWorld()->LineTraceSingleByObjectType(
+		OUT Hit,
+		PlayerViewPointLocation,
+		LineTraceEnd,
+		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),			//Contruct the query parameters based on collision channel
+		TraceParameters
+	);
+
+	AActor* ActorIt = Hit.GetActor();
+	if (ActorIt) {
+		UE_LOG(LogTemp, Warning, TEXT("Line trace hit: %s"), *(ActorIt->GetName()))
+	}
 
 	//See what hit
 }
