@@ -5,3 +5,5 @@
 /BuildingEscape/Build/
 /BuildingEscape/DerivedDataCache/
 *.VC.db
+*.suo
+*.VC.opendb
