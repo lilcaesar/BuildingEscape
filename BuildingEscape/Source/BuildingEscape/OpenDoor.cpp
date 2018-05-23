@@ -28,33 +28,17 @@ void UOpenDoor::BeginPlay()
 	}
 }
 
-void UOpenDoor::OpenDoor()
-{
-	//Set the door rotator
-	//Owner->SetActorRotation(FRotator(0.f, OpenaAngle, 0.f));
-	OnOpenRequest.Broadcast();	//Send request to the blueprint event
-}
-
-void UOpenDoor::CloseDoor()
-{
-	//Set the door rotator
-	Owner->SetActorRotation(FRotator(0.f, 0.f, 0.f));
-}
-
 // Called every frame
 void UOpenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	//Poll the trigger volume volume
-	if (GetTotalMassOfActorsOnPlate() > 50.f) { // TODO make into parameter
-		OpenDoor();
-		LastDoorOpenTime = GetWorld()->GetTimeSeconds();
+	if (GetTotalMassOfActorsOnPlate() > TriggerMass) {
+		OnOpen.Broadcast();	//Send request to the blueprint event
 	}
-
-	//Check if is time to close the door
-	if (GetWorld()->GetTimeSeconds() - LastDoorOpenTime > DoorCloseDelay) {
-		CloseDoor();
+	else{
+		OnClose.Broadcast();
 	}
 }
 
@@ -68,7 +52,6 @@ float UOpenDoor::GetTotalMassOfActorsOnPlate() {
 	//Iterate through all their masses
 	for (const auto* Actor : OverlappingActors){
 		TotalMass += Actor->FindComponentByClass<UPrimitiveComponent>()->GetMass();
-		UE_LOG(LogTemp, Warning, TEXT("%s on pressure plate"), *Actor->GetName());
 	}
 
 	return TotalMass;
